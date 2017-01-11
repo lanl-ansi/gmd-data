@@ -1,0 +1,17 @@
+# Ignore the data directory.
+/data/
+
+# For Java code.
+# Ignore jar files.
+*.jar
+
+# For Maven projects.
+# Ignore the target directory.
+/target/
+
+# For Eclipse projects.
+# Ignore Eclipse project files.
+.settings
+.classpath
+.project
+
