@@ -7,7 +7,7 @@
 
 # For Maven projects.
 # Ignore the target directory.
-/target/
+/gmd-java/target/
 
 # For Eclipse projects.
 # Ignore Eclipse project files.
@@ -15,3 +15,9 @@
 .classpath
 .project
 
+# For PyCharm projects.
+# Ignore PyCharm project files.
+.idea
+
+# For virtual environment.
+/gmd-python/env/
