@@ -15,6 +15,9 @@
 .classpath
 .project
 
+# For Python.
+__pycache__/
+
 # For PyCharm projects.
 # Ignore PyCharm project files.
 .idea

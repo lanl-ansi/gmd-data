@@ -11,7 +11,8 @@ class StdQuery:
         # self.interval = interval
         self.start = "1990-03-25T00:00:00.000Z"
         #self.interval = "23&3A59"
-        self.interval = "01&3A00"
+        #self.interval = "01&3A00"
+        self.interval = "01:59"
 
         self.service = "mag"
         self.stations = ["THL", "2CRES", "2CMBC", "2CCBB", "2CGDH", "2CBLC",
