@@ -7,12 +7,16 @@ if __name__=="__main__":
 
     print("data="+str(q.createDict()))
 
-    #r = requests.post(q.host,proxies=q.proxydict,data=q.testquery,stream=True)
-    r = requests.post(q.host,proxies=q.proxydict,data=q.createDict(),stream=True)
+    r = requests.get(q.host,proxies=q.proxydict,params=q.createDict(),stream=True)
 
     print("Status="+str(r.status_code))
     print(dict(r.headers))
 
-    f = str(r.raw.read())
-    print(f)
+    filename = './supermag_test.csv'
+
+    with open(filename, 'wb') as fd:
+        for chunk in r.iter_content(chunk_size=1024):
+            fd.write(chunk)
+
+    fd.close()
 
