@@ -5,9 +5,9 @@ from scraper.supermag import StdQuery
 if __name__=="__main__":
     q = StdQuery()
 
-    print("data="+str(q.createDict()))
+    print("data=" + str(q.createParamsDict()))
 
-    r = requests.get(q.host,proxies=q.proxydict,params=q.createDict(),stream=True)
+    r = requests.get(q.host, proxies=q.proxydict, params=q.createParamsDict(), stream=True)
 
     print("Status="+str(r.status_code))
     print(dict(r.headers))
