@@ -28,6 +28,13 @@ if __name__=="__main__":
     sparam = StationParam()
     iparam = IntervalParam()
 
+# Set up the station block sizes.
+    stations = sparam.stations
+    ns = len(stations)
+    ind = list(range(0, ns, 100))
+    ind.append(ns)
+
+
 # Loop over years.
     for y in years:
 

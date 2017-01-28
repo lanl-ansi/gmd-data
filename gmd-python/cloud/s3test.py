@@ -1,9 +1,9 @@
 import boto3
-from cloud import utils
+from cloud import cloudutils
 
 if __name__=="__main__":
 
-    utils.setproxy('proxyout.lanl.gov:8080')
+    cloudutils.setproxy('proxyout.lanl.gov:8080')
 
     s3 = boto3.resource('s3')
 

@@ -24,8 +24,11 @@ if __name__=="__main__":
 
     filename = './supermag_test.csv'
     newline ='\n'
+    header = 'Date_UTC,IAGA,MLT,MLAT,N,E,Z'
 
     with open(filename, 'wb') as fd:
+        fd.write(header.encode())
+        fd.write(newline.encode())
         for i in range(0,len(ind)-1):
             print('stations '+str(ind[i])+':'+str(ind[i+1]-1))
             sstations = sparam.createStationString(ind[i],ind[i+1]-1)
@@ -44,6 +47,7 @@ if __name__=="__main__":
                 if first:
                     first=False
                 else:
+                    print(line)
                     fd.write(line)
                     fd.write(newline.encode())
     fd.close()
