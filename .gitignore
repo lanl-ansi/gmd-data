@@ -1,5 +1,7 @@
 # Ignore the data directory.
 /data/
+# Ignore the dbsettings file for database access.
+dbsettings.py
 
 # For Java code.
 # Ignore jar files.
