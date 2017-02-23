@@ -1,7 +1,7 @@
 import pytz
 import requests
 from datetime import datetime, timedelta
-from settings import *
+from magneto.dbsettings import *
 from sqlalchemy import Column, DateTime, String, Integer, \
                        MetaData, create_engine
 from sqlalchemy.ext.declarative import declarative_base
