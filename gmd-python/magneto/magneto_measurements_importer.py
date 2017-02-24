@@ -1,4 +1,7 @@
 # Presumes that the stations and measurements tables have been instantiated, and that the stations table is populated.
+import sys
+sys.path.append('.')
+
 from cloud import cloudutils
 
 import boto3
@@ -15,7 +18,7 @@ if __name__=="__main__":
     s3bucketName = 'lanlytics/gmd'
 
     # Set the LANL flag: True for LANL False for AWS.
-    LANL = True
+    LANL = False
 
     # Set the proxy information for LANL.
     if LANL:
@@ -30,7 +33,7 @@ if __name__=="__main__":
 
     # List all the files in the bucket.
     bucket = s3.Bucket('lanlytics')
-    objects = bucket.objects.filter(Prefix='gmd/supermag-2000-01')
+    objects = bucket.objects.filter(Prefix='gmd/supermag-200')
     filelist = []
     for object in objects:
         print(object.key)

@@ -19,6 +19,7 @@ dbsettings.py
 
 # For Python.
 __pycache__/
+*.pyc
 
 # For PyCharm projects.
 # Ignore PyCharm project files.

@@ -55,7 +55,7 @@ def insert_measurements(measurementsfile,db_uri):
                     total += count
                     print(str(total) + ' records written.')
                     count = 0
-                    measurements.clear()
+                    measurements = []
         if len(measurements)!=0:
             insert_buffer(measurements,engine)
             total += len(measurements)
