@@ -1,0 +1,7 @@
+# A Java properities file for connecting to the magneto database.
+host = pg.lanlytics.com
+port = 22
+db = lanlytics
+schema = magneto
+user = magneto_user
+password = mIOwdecPUoJXkgHIDFFB
