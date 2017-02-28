@@ -35,11 +35,11 @@ public class DBConnector {
 			String host = props.getProperty("host");
 			String port = props.getProperty("port");
 			String db = props.getProperty("db");
-			String schema = props.getProperty("schema");
 			String user = props.getProperty("user");
 			String password = props.getProperty("password");
 			String uri = "jdbc:postgresql://"+host+":"+port+"/"+db+
-					"?user="+user+"&password="+password;
+					"?user="+user+"&password="+password+
+					"&ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory";
 			connection = DriverManager.getConnection(uri);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
