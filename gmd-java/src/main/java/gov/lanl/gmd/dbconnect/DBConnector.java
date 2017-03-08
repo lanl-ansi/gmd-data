@@ -58,6 +58,14 @@ public class DBConnector {
 		return connection;
 	}
 	
+	public void closeConnection(){
+		try {
+			connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	
 	
 	

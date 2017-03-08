@@ -39,11 +39,10 @@ public class DBConnectorTest extends TestCase {
 			for(int i=0;i<10;i++){
 				Assert.assertTrue(testIDs[i].equals(stationIDs.get(i)));
 			}
-			
+			conn.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
 	}
 	
 

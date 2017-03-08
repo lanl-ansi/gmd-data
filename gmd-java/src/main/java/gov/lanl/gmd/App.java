@@ -1,13 +1,13 @@
 package gov.lanl.gmd;
 
 /**
- * Hello world!
+ * Placeholder for a Magneto application.
  *
  */
 public class App 
 {
     public static void main( String[] args )
     {
-        System.out.println( "Hello World!" );
+        System.out.println( "Magneto" );
     }
 }
