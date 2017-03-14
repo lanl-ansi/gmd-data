@@ -9,7 +9,7 @@ public class TimeFormatter {
 	public static String formatTimestamp(Timestamp timestamp){
 		Date date = new Date();
 		date.setTime(timestamp.getTime());
-		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.").format(date);
+		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date);
 	}
 
 }

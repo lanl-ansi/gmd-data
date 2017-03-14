@@ -301,21 +301,22 @@ public class Queries {
 			if(stationIDSet!=null){
 				if(stationIDSet.size()>0){
 					String[] stationArray = stationIDSet.toArray(new String[0]);
-					StringBuilder stationsClause = new StringBuilder("iaga = any(array["+stationArray[0]);
+					StringBuilder stationsClause = new StringBuilder("iaga = any(array['"+stationArray[0]);
 					for(int i=1;i<stationArray.length;i++){
-						stationsClause.append("," + stationArray[i]);
+						stationsClause.append("','" + stationArray[i]);
 					}
-					stationsClause.append("])");
+					stationsClause.append("'])");
 					queryString.append(stationsClause.toString());
 				}
 			}
 			if(timeRange!=null){
 				StringBuilder timeRangeClause = new StringBuilder(" and ");
-				timeRangeClause.append("date_utc >= " + TimeFormatter.formatTimestamp(timeRange[0]));
-				timeRangeClause.append(" and data_utc <= " + TimeFormatter.formatTimestamp(timeRange[1]));
+				timeRangeClause.append("date_utc >= '" + TimeFormatter.formatTimestamp(timeRange[0]));
+				timeRangeClause.append("' and date_utc <= '" + TimeFormatter.formatTimestamp(timeRange[1])+"'");
 				queryString.append(timeRangeClause.toString());
 			}
 			// Finally perform the query and obtain a result set.
+			// System.out.println(queryString.toString());
 			r = queryMagneto(conn,queryString.toString());
 		}
 		return r;
