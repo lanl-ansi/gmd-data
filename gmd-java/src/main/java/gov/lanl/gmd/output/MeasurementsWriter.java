@@ -51,9 +51,9 @@ public class MeasurementsWriter {
 	}
 	
 	
-	protected void writeMeasurements(ResultSet r){
+	public void writeMeasurements(ResultSet r){
 		try {
-			if(r.next()){
+			while(r.next()){
 				Timestamp date_utc = r.getTimestamp("date_utc");
 				String timestamp = TimeFormatter.formatTimestamp(date_utc);
 				String iaga = r.getString("iaga");
@@ -84,7 +84,7 @@ public class MeasurementsWriter {
 		}
 	}
 	
-	protected void close(){
+	public void close(){
 		switch(outputType){
 		case CSV:
 			CSVPrinter printer = (CSVPrinter) writer;

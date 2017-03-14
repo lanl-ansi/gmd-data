@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import gov.lanl.gmd.dbconnect.DBConnector;
+import gov.lanl.gmd.output.MeasurementsWriter.OutputType;
 import gov.lanl.gmd.queries.Queries.CoordinateType;
 import gov.lanl.gmd.queries.Queries.Station;
 import gov.lanl.gmd.queries.Queries.MeasurementFilter;
@@ -33,9 +34,6 @@ public class QueriesTest extends TestCase {
 
 	
 	public void testStationsQuery(){
-//		String[] testStations = {
-//				"A02","A03","A04","A05","A06","A07",
-//				"A08","A09","A10","A11"};		
 		DBConnector connector = new DBConnector();
 		Connection conn = connector.getConnection();
 		Map<String,Station> stations = Queries.getStations(conn);
@@ -48,12 +46,13 @@ public class QueriesTest extends TestCase {
 	}
 	
 	public void testStationsByGeoQuery(){
-//		double minlon=-166.03, minlat=59.59, maxlon=-141.90, maxlat=70.88; // Alaska
-		String[] sortedTestStations = {"ARC", "BET", "CGO", "CMO", "DED", "FYU", "GAK",
-				"HLM", "HOM", "JCO", "KAV", "KOT", "PKR", "T39", "T40", "T41", "TLK"};
+		String[] sortedTestStations = {"ARC", "BET", "CGO", "CMO", "DED", "FYU",
+				"GAK", "HLM", "HOM", "JCO", "KAV", "KOT", "PKR", "T39", "T40",
+				"T41", "TLK"};
 		DBConnector connector = new DBConnector();
 		Connection conn = connector.getConnection();
-		Map<String,Station> stations = Queries.getStationsByGeoCoords(conn, minlon, minlat, maxlon, maxlat);
+		Map<String,Station> stations = Queries.getStationsByGeoCoords(conn,
+				minlon, minlat, maxlon, maxlat);
 		List<String> iaga = new ArrayList<String>(stations.keySet());
 		Collections.sort(iaga);
 		for(int i=0;i<sortedTestStations.length;i++){
@@ -63,20 +62,6 @@ public class QueriesTest extends TestCase {
 	}
 	
 	public void testMeasurementFilter(){
-//		MeasurementFilter filter = new MeasurementFilter();
-//		String[] testStations = {
-//				"A02","A03","A04","A05","A06","A07",
-//				"A08","A09","A10","A11"};		
-//		filter.setStationIDs(testStations);
-//		
-//        String initialTimestamp = "2001-10-02 18:00:00";
-//        Timestamp initialTime = Timestamp.valueOf(initialTimestamp);
-//        String finalTimestamp = "2001-10-02 18:01:00";
-//		Timestamp finalTime = Timestamp.valueOf(finalTimestamp);
-//		filter.setTimeRange(initialTime, finalTime);
-//		
-//		double minlon=-166.03, minlat=59.59, maxlon=-141.90, maxlat=70.88;
-//		filter.setCoordRange(minlon, minlat, maxlon, maxlat);
 		MeasurementFilter filter = makeTestFilter();
 		
 		String[] stationIds = filter.getStationIDs();
@@ -103,36 +88,39 @@ public class QueriesTest extends TestCase {
 	}
 	
 	public void testMeasurementQuery(){
-		// Just test to see if a measurement query runs.
-		DBConnector connector = new DBConnector();
-		Connection conn = connector.getConnection();
-		MeasurementFilter filter = makeTestFilter();
-		ResultSet r = Queries.filterMeasurements(conn, filter);
+		// Test to see if a measurement query runs.
+		ResultSet r = performMeasurementQuery();
 		try {
 			Assert.assertTrue(r.next());
 		} catch (SQLException e) {
 			Assert.assertFalse(false);
 			e.printStackTrace();
 		}
-		
-		
-		
+	}
+	
+	public void testFileDownload(){
+		String path = "src/test/java/gov/lanl/gmd/queries";
+		String prefix = "downloadTest";
+		OutputType outputType = OutputType.CSV;
+		MagnetoMeasurementsWriter writer = new MagnetoMeasurementsWriter(
+				path, prefix, outputType);
+		ResultSet r = performMeasurementQuery();
+		writer.writeMeasurements(r);
+		writer.close();
+	}
+	
+	private ResultSet performMeasurementQuery(){
+		DBConnector connector = new DBConnector();
+		Connection conn = connector.getConnection();
+		MeasurementFilter filter = makeTestFilter();
+		ResultSet r = Queries.filterMeasurements(conn, filter);
+		return r;
 	}
 	
 	private MeasurementFilter makeTestFilter(){
 		MeasurementFilter filter = new MeasurementFilter();
-//		String[] testStations = {
-//				"A02","A03","A04","A05","A06","A07",
-//				"A08","A09","A10","A11"};		
 		filter.setStationIDs(testStations);
-		
-//        String initialTimestamp = "2001-10-02 18:00:00";
-//        Timestamp initialTime = Timestamp.valueOf(initialTimestamp);
-//        String finalTimestamp = "2001-10-02 18:01:00";
-//		Timestamp finalTime = Timestamp.valueOf(finalTimestamp);
 		filter.setTimeRange(initialTime, finalTime);
-		
-//		double minlon=-166.03, minlat=59.59, maxlon=-141.90, maxlat=70.88;
 		filter.setCoordRange(minlon, minlat, maxlon, maxlat);
 		return filter;
 	}
