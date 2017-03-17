@@ -13,6 +13,10 @@ import java.sql.Timestamp;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.codehaus.jackson.JsonEncoding;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.JsonGenerator;
 
 public class MeasurementsWriter {
 	
@@ -42,7 +46,15 @@ public class MeasurementsWriter {
 		case JSON:
 			filepath = path+"/"+prefix+".json";
 			file = new File(filepath);
-			// TODO Unsupported.			
+			JsonFactory jfactory = new JsonFactory();
+			try {
+				JsonGenerator jGenerator = jfactory.createJsonGenerator(new File(
+						filepath), JsonEncoding.UTF8);
+				jGenerator.writeStartArray();
+				writer = jGenerator;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			break;
 		case HDF5:
 			// TODO Unsupported.
@@ -70,7 +82,17 @@ public class MeasurementsWriter {
 					printer.printRecord(timestamp,iaga,mlt,mlat,n,e,z,collection);
 					break;
 				case JSON:
-					// TODO Unsupported.
+					JsonGenerator jGenerator = (JsonGenerator) writer;
+					jGenerator.writeStartObject();
+					jGenerator.writeStringField("timestamp", timestamp);
+					jGenerator.writeStringField("iaga", iaga);				
+					jGenerator.writeNumberField("mlt", mlt);
+					jGenerator.writeNumberField("mlat", mlat);
+					jGenerator.writeNumberField("n", n);
+					jGenerator.writeNumberField("e", e);
+					jGenerator.writeNumberField("z", z);
+					jGenerator.writeStringField("collection", collection);				
+					jGenerator.writeEndObject();
 					break;
 				case HDF5:
 					// TODO Unsupported.
@@ -95,7 +117,15 @@ public class MeasurementsWriter {
 			}
 			break;
 		case JSON:
-			// TODO Unsupported.
+			JsonGenerator jGenerator = (JsonGenerator) writer;
+			try {
+				jGenerator.writeEndArray();
+				jGenerator.close();
+			} catch (JsonGenerationException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}			
 			break;
 		case HDF5:
 			// TODO Unsupported.

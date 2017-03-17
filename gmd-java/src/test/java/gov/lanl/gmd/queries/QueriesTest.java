@@ -98,7 +98,7 @@ public class QueriesTest extends TestCase {
 		}
 	}
 	
-	public void testFileDownload(){
+	public void testCSVFileDownload(){
 		String path = "src/test/java/gov/lanl/gmd/queries";
 		String prefix = "downloadTest";
 		OutputType outputType = OutputType.CSV;
@@ -109,6 +109,17 @@ public class QueriesTest extends TestCase {
 		writer.close();
 	}
 	
+	public void testJsonFileDownload(){
+		String path = "src/test/java/gov/lanl/gmd/queries";
+		String prefix = "downloadTest";
+		OutputType outputType = OutputType.JSON;
+		MagnetoMeasurementsWriter writer = new MagnetoMeasurementsWriter(
+				path, prefix, outputType);
+		ResultSet r = performMeasurementQuery();
+		writer.writeMeasurements(r);
+		writer.close();
+	}
+
 	private ResultSet performMeasurementQuery(){
 		DBConnector connector = new DBConnector();
 		Connection conn = connector.getConnection();
