@@ -3,7 +3,9 @@ host = pg.lanlytics.com
 port = 22
 db = lanlytics
 schema = magneto
-#user = magneto_user
-user = magneto_writer
-#password = mIOwdecPUoJXkgHIDFFB
-password = 5qRDEHg8GTvZ1sP5pOwT
+# Read-only user settings.
+user = magneto_user
+password = mIOwdecPUoJXkgHIDFFB
+# Admin user settings - NO NOT USE
+#user = magneto_writer
+#password = 5qRDEHg8GTvZ1sP5pOwT
