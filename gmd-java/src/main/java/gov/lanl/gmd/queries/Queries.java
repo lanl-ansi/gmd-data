@@ -242,8 +242,10 @@ public class Queries {
 				stations = new HashMap<>();
 				while(r.next()){
 					String iaga = r.getString("iaga");
-					double glon = r.getDouble("glon");
-					double glat = r.getDouble("glat");
+					// TODO This interface returns geographic longitude in the range [-180,180]
+					// instead of [0,360] as stored in SuperMAG convention.
+					double glon = r.getDouble("glon")-360.0;
+					double glat = r.getDouble("glat")-360.0;
 					double mlon = r.getDouble("mlon");
 					double mlat = r.getDouble("mlat");
 					String station_name = r.getString("station_name");
