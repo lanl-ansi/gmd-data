@@ -228,6 +228,7 @@ public class Queries {
 
 	public static Map<String,Station> getStationsByMagCoords(Connection conn,
 			double mlonmin, double mlatmin, double mlonmax, double mlatmax){
+		// TODO Do magnetic longitudes require a shift?
 		String queryString = "select * from magneto.stations where"+
 				" mlon >= "+mlonmin+" and mlon <= "+mlonmax+
 				" mlat >= "+mlatmin+" and mlat <= "+mlatmax+ " order by iaga";
@@ -245,7 +246,7 @@ public class Queries {
 					// TODO This interface returns geographic longitude in the range [-180,180]
 					// instead of [0,360] as stored in SuperMAG convention.
 					double glon = r.getDouble("glon")-360.0;
-					double glat = r.getDouble("glat")-360.0;
+					double glat = r.getDouble("glat");
 					double mlon = r.getDouble("mlon");
 					double mlat = r.getDouble("mlat");
 					String station_name = r.getString("station_name");
