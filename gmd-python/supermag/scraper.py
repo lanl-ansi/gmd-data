@@ -15,8 +15,8 @@ if __name__=="__main__":
 
 # Define the span of years and months: 1981-2015 are available.
     #years = list(range(1981, 2016))
-    years = list(range(1990,2016))
-    months = list(range(1,13))
+    years = list(range(1986,1987))
+    months = list(range(6,7))
     #months = list(range(1,2))
 
 # Define the storage bucket and folder in S3.
