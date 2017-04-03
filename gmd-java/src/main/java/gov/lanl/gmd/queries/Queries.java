@@ -314,7 +314,8 @@ public class Queries {
 				timeRangeClause.append("' and date_utc <= '" + TimeFormatter.formatTimestamp(timeRange[1])+"'");
 				queryString.append(timeRangeClause.toString());
 			}
-			// Finally perform the query and obtain a result set.
+			// Finally order by time, perform the query and obtain a result set.
+			queryString.append(" order by date_utc;");
 			// System.out.println(queryString.toString());
 			r = queryMagneto(conn,queryString.toString());
 		}
