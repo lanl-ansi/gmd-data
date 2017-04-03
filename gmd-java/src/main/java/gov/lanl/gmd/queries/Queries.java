@@ -215,12 +215,11 @@ public class Queries {
 		return getStations(r);
 	}
 
-	// Note: This query include a shift to SuperMag longitude values in the range [0,360]
-	// instead of [-180,180]. The transformation requires adding 360 degrees to longitude.
+
 	public static Map<String,Station> getStationsByGeoCoords(Connection conn,
 			double glonmin, double glatmin, double glonmax, double glatmax){
 		String queryString = "select * from magneto.stations where"+
-				" glon >= "+(glonmin+360) +" and glon <= "+(glonmax+360)+
+				" glon >= "+glonmin +" and glon <= "+glonmax+
 				" and glat >= "+glatmin+" and glat <= "+glatmax+ " order by iaga";
 		ResultSet r = queryMagneto(conn, queryString);
 		return getStations(r);
@@ -228,7 +227,6 @@ public class Queries {
 
 	public static Map<String,Station> getStationsByMagCoords(Connection conn,
 			double mlonmin, double mlatmin, double mlonmax, double mlatmax){
-		// TODO Do magnetic longitudes require a shift?
 		String queryString = "select * from magneto.stations where"+
 				" mlon >= "+mlonmin+" and mlon <= "+mlonmax+
 				" mlat >= "+mlatmin+" and mlat <= "+mlatmax+ " order by iaga";
@@ -243,9 +241,7 @@ public class Queries {
 				stations = new HashMap<>();
 				while(r.next()){
 					String iaga = r.getString("iaga");
-					// TODO This interface returns geographic longitude in the range [-180,180]
-					// instead of [0,360] as stored in SuperMAG convention.
-					double glon = r.getDouble("glon")-360.0;
+					double glon = r.getDouble("glon");
 					double glat = r.getDouble("glat");
 					double mlon = r.getDouble("mlon");
 					double mlat = r.getDouble("mlat");
