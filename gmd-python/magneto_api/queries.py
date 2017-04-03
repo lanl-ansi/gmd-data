@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import and_
 
@@ -18,6 +19,7 @@ class Coordinate:
         self.x = x
         self.y = y
 
+# Timestamp range is given in python datetime.datetime instances.
 class MeasurementFilter:
     def __init__(self):
         self.station_ids = []
@@ -68,17 +70,12 @@ def get_stations(dbconnector):
     return stations
 
 def get_stations_by_geocoords(dbconnector,minlon,minlat,maxlon,maxlat):
-    # Note: This query include a shift to SuperMag longitude values in the range [0,360]
-	# instead of [-180,180]. The transformation requires adding 360 degrees to longitude.
-    minlonc = minlon +360
-    maxlonc = maxlon +360
-
     Station =dbconnector.Station
     stations = {}
     for station in dbconnector.session.query(Station)\
-            .filter(and_(Station.glon>=minlonc,Station.glat>=minlat,Station.glon<=maxlonc,Station.glat<=maxlat))\
+            .filter(and_(Station.glon>=minlon,Station.glat>=minlat,Station.glon<=maxlon,Station.glat<=maxlat))\
             .order_by(Station.iaga):
-        station.glon = station.glon -360
+        station.glon = station.glon
         stations[station.iaga] = station
     return stations
 
@@ -102,15 +99,48 @@ def filter_measurements(dbconnector,filter):
     station_set = set()
 
     # Add existing station IDs to the set.
-    for s in station_ids:
-        station_set.add(s)
+    for station_id in station_ids:
+        station_set.add(station_id)
 
-    # TODO ..........................................
-    # If the coordinate range is not empty query for stations in the coordinate range.
+    stations = None
+    # If the coordinate range is not empty, query for stations in the coordinate range.
+    if len(coordinate_range)>0:
+        minlon = coordinate_range[0].x
+        minlat = coordinate_range[0].y
+        maxlon = coordinate_range[1].x
+        maxlat = coordinate_range[1].y
+        if coordinate_type == CoordinateType.GEOGRAPHIC:
+            # Use geographic coordinates.
+            stations = get_stations_by_geocoords(dbconnector,minlon,minlat,maxlon,maxlat)
+        if coordinate_type == CoordinateType.MAGNETIC:
+            # Use magnetic coordinates.
+            stations = get_stations_by_magcoords(dbconnector,minlon,minlat,maxlon,maxlat)
     # Add stations in the range to the set.
+    if stations!=None:
+        key_list = stations.keys()
+        for key in key_list:
+            station_set.add(key)
 
-    # Create a query based on the station set and append the timestamp range query.
+    # Create a string-based query,filter based on the station set.
+    query_string = "select * from magneto.measurements where "
+    station_id_list = list(station_set)
+    # If there are stations to be named.
+    if len(station_id_list)>0:
+        query_string = query_string+ "iaga = any(array['"+station_id_list[0]
+        for i in range(1,len(station_id_list)):
+            query_string = query_string+"','" + station_id_list[i]
+        query_string = query_string+"'])"
+
+    #Append the timestamp range if any.
+    if len(timestamp_range)>0:
+
+        query_string = query_string+" and "
+        query_string = query_string+ "date_utc >= '" + str(timestamp_range[0]) \
+                + "' and date_utc <= '" + str(timestamp_range[1]) + "'"
 
     # Perform the query and return the measurements.
+    query_string = query_string + " order by date_utc"
+    rs = query_magneto(dbconnector,query_string)
+    return rs
 
 
