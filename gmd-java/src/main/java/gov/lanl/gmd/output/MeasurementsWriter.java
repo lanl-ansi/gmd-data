@@ -1,15 +1,17 @@
 package gov.lanl.gmd.output;
 
 
-import gov.lanl.gmd.queries.Queries;
 import gov.lanl.gmd.queries.TimeFormatter;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -25,7 +27,7 @@ public class MeasurementsWriter {
 	private OutputType outputType;
 	private File file = null;
 	private Object writer = null;
-
+//	private String[] columnNames;
 
 	protected MeasurementsWriter(String path, String prefix, OutputType outputType) {
 		this.outputType = outputType;
@@ -37,8 +39,6 @@ public class MeasurementsWriter {
 			try {
 				CSVPrinter printer = new CSVPrinter(new FileWriter(file),CSVFormat.DEFAULT);
 				writer = printer;
-				Object[] headers = (Object[]) Queries.getMeasurementFieldNames();
-				printer.printRecord(headers);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -63,35 +63,46 @@ public class MeasurementsWriter {
 	}
 	
 	
-	public void writeMeasurements(ResultSet r){
+	public void writeMeasurements(ResultSet r) throws Exception {
 		try {
+			ResultSetMetaData metadata = r.getMetaData();
+			int ncolumns = metadata.getColumnCount();
+			String[] columnNames = new String[ncolumns];
+			for(int i=0;i<ncolumns;i++){
+				columnNames[i] = metadata.getColumnName(i+1);
+			}
+			boolean firstrecord = true;
 			while(r.next()){
-				Timestamp date_utc = r.getTimestamp("date_utc");
-				String timestamp = TimeFormatter.formatTimestamp(date_utc);
-				String iaga = r.getString("iaga");
-				double mlt = r.getDouble("mlt");
-				double mlat = r.getDouble("mlat");
-				double n = r.getDouble("n");
-				double e = r.getDouble("e");
-				double z = r.getDouble("z");
-				String collection = r.getString("collection");
+				Object[] record = new Object[ncolumns];
+				// The timestamp is always the first.
+				record[0] = TimeFormatter.formatTimestamp((Timestamp) r.getObject(1));
+				for(int i=1;i<ncolumns;i++){
+					record[i] = r.getObject(i+1);
+				}
 
 				switch(outputType){
 				case CSV:
 					CSVPrinter printer = (CSVPrinter) writer;
-					printer.printRecord(timestamp,iaga,mlt,mlat,n,e,z,collection);
+					if(firstrecord){
+						printer.printRecord((Object[]) columnNames);
+						firstrecord = false;
+					}
+					printer.printRecord(record);
 					break;
 				case JSON:
 					JsonGenerator jGenerator = (JsonGenerator) writer;
 					jGenerator.writeStartObject();
-					jGenerator.writeStringField("timestamp", timestamp);
-					jGenerator.writeStringField("iaga", iaga);				
-					jGenerator.writeNumberField("mlt", mlt);
-					jGenerator.writeNumberField("mlat", mlat);
-					jGenerator.writeNumberField("n", n);
-					jGenerator.writeNumberField("e", e);
-					jGenerator.writeNumberField("z", z);
-					jGenerator.writeStringField("collection", collection);				
+					// The timestamp is always first.
+					jGenerator.writeStringField("timestamp", (String) record[0]);
+
+					for(int i=1;i<ncolumns;i++){
+						String typeName = metadata.getColumnTypeName(i+1);
+						if(typeName.equals("varchar")){
+							jGenerator.writeStringField(columnNames[i], (String) record[i]);
+						} else if(typeName.equals("float8")){
+							jGenerator.writeNumberField(columnNames[i], (double) record[i]);
+						}
+					}
 					jGenerator.writeEndObject();
 					break;
 				case HDF5:
@@ -100,9 +111,9 @@ public class MeasurementsWriter {
 				}				
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw e;
 		} catch (IOException e1) {
-			e1.printStackTrace();
+			throw e1;
 		}
 	}
 	

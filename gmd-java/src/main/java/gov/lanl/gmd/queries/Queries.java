@@ -7,8 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,6 +20,20 @@ import java.util.Set;
 public class Queries {
 
 	enum CoordinateType {GEOGRAPHIC,MAGNETIC}
+	enum MeasurementOption {
+		MLON("mlon"),
+		MLAT("mlat"),
+		N("n"),
+		E("e"),
+		Z("z");
+		private String value;	
+		MeasurementOption(String value){
+			this.value = value;
+		}
+		public String toString(){
+			return value;
+		}
+	}
 
 	/**
 	 * A station record object.
@@ -105,6 +121,7 @@ public class Queries {
 	}
 
 	public static class MeasurementFilter{
+		private MeasurementOption[] measurementOptions = null;		
 		private String[] stationIDs = null;
 		private Timestamp[] timeRange = null;
 		private Point2D[] coordRange = null;
@@ -112,6 +129,14 @@ public class Queries {
 		
 		public MeasurementFilter() {}
 		
+		public MeasurementOption[] getMeasurementOptions() {
+			return measurementOptions;
+		}
+
+		public void setMeasurementOptions(MeasurementOption[] measurementOptions) {
+			this.measurementOptions = measurementOptions;
+		}
+
 		public String[] getStationIDs() {
 			return stationIDs;
 		}
@@ -149,9 +174,21 @@ public class Queries {
 	private static final String[] stationFieldNames = {"iaga","glon","glat","mlon","mlat","station_name"};
 	private static final Class<?>[] stationFieldTypes = {String.class, Double.class, Double.class,
 		Double.class, Double.class, String.class};
+	private static final Map<String,Class<?>> stationFields = new HashMap<>();
+	static{
+		for(int i=0;i<stationFieldNames.length;i++){
+			stationFields.put(stationFieldNames[i], stationFieldTypes[i]);
+		}
+	}
 	private static final String[] measurementFieldNames = {"date_utc","iaga","mlt","mlat","n","e","z","collection"};
 	private static final Class<?>[] measurementFieldTypes = {Timestamp.class, String.class, Double.class,
 		Double.class, Double.class, Double.class, Double.class, String.class};
+	private static final Map<String,Class<?>> measurementFields = new HashMap<>();
+	static{
+		for(int i=0;i<measurementFieldNames.length;i++){
+			measurementFields.put(measurementFieldNames[i], measurementFieldTypes[i]);
+		}		
+	}
 
 	/**
 	 * Returns a list of table names.
@@ -167,6 +204,14 @@ public class Queries {
 	 */
 	public static String[] getStationFieldNames(){
 		return stationFieldNames;
+	}
+	
+	/**
+	 * Returns a dictionary of station field names and types.
+	 * @return
+	 */
+	public static Map<String,Class<?>> getStationFields(){
+		return stationFields;
 	}
 
 	/**
@@ -184,6 +229,14 @@ public class Queries {
 	public static String[] getMeasurementFieldNames(){
 		return measurementFieldNames;
 	}
+	
+	/**
+	 * Returns a dictionary of measurement field names and types.
+	 * @return
+	 */
+	public static Map<String,Class<?>> getMeasurementFields(){
+		return measurementFields;
+	}
 
 	/**
 	 * Returns a list of measurement field types.
@@ -192,6 +245,8 @@ public class Queries {
 	protected static Class<?>[] getMeasurementFieldTypes(){
 		return measurementFieldTypes;
 	}
+	
+	
 
 	private static ResultSet queryMagneto(Connection conn, String queryString){
 		ResultSet r = null;
@@ -257,13 +312,13 @@ public class Queries {
 
 	public static ResultSet filterMeasurements(Connection conn, MeasurementFilter filter){
 		ResultSet r = null;
-		StringBuilder queryString = new StringBuilder("select * from magneto.measurements where ");
 		String[] stationIDs = filter.getStationIDs();
 		Timestamp[] timeRange = filter.getTimeRange();
 		Point2D[] coordRange = filter.getCoordRange();
 		CoordinateType coordinateType = filter.getCoordinateType();
 		boolean whereclause = (stationIDs!=null)&&(timeRange!=null)&&(coordRange!=null);
-		if(whereclause){ // Some type of filter is required.
+		if(whereclause){ // Some type of filter is required to perform the query.
+			List<String> clauses = new ArrayList<>();
 			Set<String> stationIDSet = null;
 			// Station ID filter selects specific stations by ID.
 			if(stationIDs!=null){
@@ -305,16 +360,34 @@ public class Queries {
 						stationsClause.append("','" + stationArray[i]);
 					}
 					stationsClause.append("'])");
-					queryString.append(stationsClause.toString());
+					clauses.add(stationsClause.toString());
 				}
 			}
 			if(timeRange!=null){
-				StringBuilder timeRangeClause = new StringBuilder(" and ");
+				StringBuilder timeRangeClause = new StringBuilder();
 				timeRangeClause.append("date_utc >= '" + TimeFormatter.formatTimestamp(timeRange[0]));
 				timeRangeClause.append("' and date_utc <= '" + TimeFormatter.formatTimestamp(timeRange[1])+"'");
-				queryString.append(timeRangeClause.toString());
+				clauses.add(timeRangeClause.toString());
 			}
-			// Finally order by time, perform the query and obtain a result set.
+			// Build the query string from the clauses.
+			MeasurementOption[] measurementOptions = filter.getMeasurementOptions();
+			StringBuilder columnSelection = new StringBuilder("date_utc,iaga");
+			if(measurementOptions!=null)
+			{
+				columnSelection.append(","+measurementOptions[0]);
+				for(int i=1;i<measurementOptions.length;i++){
+					columnSelection.append(","+measurementOptions[i]);
+				}
+				columnSelection.append(",collection");
+			} else{
+				columnSelection.append("*");
+			}
+			StringBuilder queryString = new StringBuilder("select "+columnSelection.toString()
+					+ " from magneto.measurements where ");
+			queryString.append(clauses.get(0));
+			if(clauses.size()>1){
+				queryString.append(" and "+clauses.get(1));
+			}
 			queryString.append(" order by date_utc;");
 			// System.out.println(queryString.toString());
 			r = queryMagneto(conn,queryString.toString());

@@ -13,6 +13,7 @@ import java.util.Map;
 import gov.lanl.gmd.dbconnect.DBConnector;
 import gov.lanl.gmd.output.MeasurementsWriter.OutputType;
 import gov.lanl.gmd.queries.Queries.CoordinateType;
+import gov.lanl.gmd.queries.Queries.MeasurementOption;
 import gov.lanl.gmd.queries.Queries.Station;
 import gov.lanl.gmd.queries.Queries.MeasurementFilter;
 
@@ -105,8 +106,13 @@ public class QueriesTest extends TestCase {
 		MagnetoMeasurementsWriter writer = new MagnetoMeasurementsWriter(
 				path, prefix, outputType);
 		ResultSet r = performMeasurementQuery();
-		writer.writeMeasurements(r);
-		writer.close();
+		try {
+			writer.writeMeasurements(r);
+			writer.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.assertFalse(true);
+		}
 	}
 	
 	public void testJsonFileDownload(){
@@ -116,8 +122,13 @@ public class QueriesTest extends TestCase {
 		MagnetoMeasurementsWriter writer = new MagnetoMeasurementsWriter(
 				path, prefix, outputType);
 		ResultSet r = performMeasurementQuery();
-		writer.writeMeasurements(r);
-		writer.close();
+		try {
+			writer.writeMeasurements(r);
+			writer.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.assertFalse(true);
+		}
 	}
 
 	private ResultSet performMeasurementQuery(){
@@ -130,6 +141,8 @@ public class QueriesTest extends TestCase {
 	
 	private MeasurementFilter makeTestFilter(){
 		MeasurementFilter filter = new MeasurementFilter();
+		filter.setMeasurementOptions(
+				new MeasurementOption[]{MeasurementOption.E,MeasurementOption.Z});
 		filter.setStationIDs(testStations);
 		filter.setTimeRange(initialTime, finalTime);
 		filter.setCoordRange(minlon, minlat, maxlon, maxlat);
