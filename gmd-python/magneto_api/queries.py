@@ -14,6 +14,13 @@ class CoordinateType:
     GEOGRAPHIC = 0
     MAGNETIC = 1
 
+class MeasurementOption:
+    MLON = "mlon"
+    MLAT = "mlat"
+    N = "n"
+    E = "e"
+    Z = "z"
+
 class Coordinate:
     def __init__(self,x,y):
         self.x = x
@@ -22,10 +29,14 @@ class Coordinate:
 # Timestamp range is given in python datetime.datetime instances.
 class MeasurementFilter:
     def __init__(self):
+        self.measurement_options = []
         self.station_ids = []
         self.timestamp_range = []
         self.coordinate_range = []
         self.coordinate_type = CoordinateType.GEOGRAPHIC
+
+    def add_measurement_option(self,measurement_option):
+        self.measurement_options.append(measurement_option)
 
     def add_station_ids(self,station_ids):
         for id in station_ids:
@@ -80,7 +91,7 @@ def get_stations_by_geocoords(dbconnector,minlon,minlat,maxlon,maxlat):
     return stations
 
 def get_stations_by_magcoords(dbconnector,minlon,minlat,maxlon,maxlat):
-    # Do these longitudes require a shift?
+    # TODO Do these longitudes require any modification?
     Station =dbconnector.Station
     stations = {}
     for station in dbconnector.session.query(Station)\
@@ -90,57 +101,78 @@ def get_stations_by_magcoords(dbconnector,minlon,minlat,maxlon,maxlat):
     return stations
 
 def filter_measurements(dbconnector,filter):
+    measurement_options = filter.measurement_options
     station_ids = filter.station_ids
     timestamp_range = filter.timestamp_range
     coordinate_range = filter.coordinate_range
     coordinate_type = filter.coordinate_type
+    rs = None
+    # Only perform the query if at least one filter is present.
+    if ((len(station_ids)>0)|(len(timestamp_range)>0)|(len(coordinate_range)>0)):
 
-    # Station ID set.
-    station_set = set()
+        # Station ID set.
+        station_set = set()
 
-    # Add existing station IDs to the set.
-    for station_id in station_ids:
-        station_set.add(station_id)
+        # Add existing station IDs to the set.
+        for station_id in station_ids:
+            station_set.add(station_id)
 
-    stations = None
-    # If the coordinate range is not empty, query for stations in the coordinate range.
-    if len(coordinate_range)>0:
-        minlon = coordinate_range[0].x
-        minlat = coordinate_range[0].y
-        maxlon = coordinate_range[1].x
-        maxlat = coordinate_range[1].y
-        if coordinate_type == CoordinateType.GEOGRAPHIC:
-            # Use geographic coordinates.
-            stations = get_stations_by_geocoords(dbconnector,minlon,minlat,maxlon,maxlat)
-        if coordinate_type == CoordinateType.MAGNETIC:
-            # Use magnetic coordinates.
-            stations = get_stations_by_magcoords(dbconnector,minlon,minlat,maxlon,maxlat)
-    # Add stations in the range to the set.
-    if stations!=None:
-        key_list = stations.keys()
-        for key in key_list:
-            station_set.add(key)
+        stations = None
+        # If the coordinate range is not empty, query for stations in the coordinate range.
+        if len(coordinate_range)>0:
+            minlon = coordinate_range[0].x
+            minlat = coordinate_range[0].y
+            maxlon = coordinate_range[1].x
+            maxlat = coordinate_range[1].y
+            if coordinate_type == CoordinateType.GEOGRAPHIC:
+                # Use geographic coordinates.
+                stations = get_stations_by_geocoords(dbconnector,minlon,minlat,maxlon,maxlat)
+            if coordinate_type == CoordinateType.MAGNETIC:
+                # Use magnetic coordinates.
+                stations = get_stations_by_magcoords(dbconnector,minlon,minlat,maxlon,maxlat)
+        # Add stations in the range to the set.
+        if stations!=None:
+            key_list = stations.keys()
+            for key in key_list:
+                station_set.add(key)
 
-    # Create a string-based query,filter based on the station set.
-    query_string = "select * from magneto.measurements where "
-    station_id_list = list(station_set)
-    # If there are stations to be named.
-    if len(station_id_list)>0:
-        query_string = query_string+ "iaga = any(array['"+station_id_list[0]
-        for i in range(1,len(station_id_list)):
-            query_string = query_string+"','" + station_id_list[i]
-        query_string = query_string+"'])"
+        # Create a string-based query,filter based on the station set.
+        # Check for measurement (column) options.
+        column_list= "*"
+        if len(measurement_options)>0:
+            column_list = measurement_options[0]
+            for i in range(1,len(measurement_options)):
+                column_list =  column_list + ","+measurement_options[i]
+            column_list = "date_utc,iaga,"+column_list+",collection"
 
-    #Append the timestamp range if any.
-    if len(timestamp_range)>0:
+        query_string = "select "+column_list+" from magneto.measurements where "
 
-        query_string = query_string+" and "
-        query_string = query_string+ "date_utc >= '" + str(timestamp_range[0]) \
-                + "' and date_utc <= '" + str(timestamp_range[1]) + "'"
+        clauses = []
+        # Create a string for the stations clause.
+        station_id_list = list(station_set)
+        # If there are stations to be named.
+        stations_clause = None
+        if len(station_id_list)>0:
+            stations_clause = "iaga = any(array['"+station_id_list[0]
+            for i in range(1,len(station_id_list)):
+                stations_clause = stations_clause +"','" + station_id_list[i]
+            stations_clause = stations_clause +"'])"
+            clauses.append(stations_clause)
 
-    # Perform the query and return the measurements.
-    query_string = query_string + " order by date_utc"
-    rs = query_magneto(dbconnector,query_string)
+        # Create a time range clause.
+        time_range_clause = None
+        if len(timestamp_range)>0:
+            time_range_clause = "date_utc >= '" + str(timestamp_range[0]) \
+                    + "' and date_utc <= '" + str(timestamp_range[1]) + "'"
+            clauses.append(time_range_clause)
+
+        # Form the query string.
+        # Perform the query and return the measurements.
+        query_string = query_string + clauses[0]
+        if len(clauses)>1:
+            query_string = query_string + " and " + clauses[1]
+        query_string = query_string + " order by date_utc"
+        rs = query_magneto(dbconnector,query_string)
     return rs
 
 
