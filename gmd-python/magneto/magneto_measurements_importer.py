@@ -8,7 +8,7 @@ import boto3
 
 from  datetime import datetime
 
-from magneto.dbsettings import *
+from magneto.dbsettings_RESTRICTED import *
 
 from magneto import magneto_measurements
 

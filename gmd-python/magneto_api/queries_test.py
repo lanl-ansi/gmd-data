@@ -1,6 +1,7 @@
 from magneto_api.dbconnect import DBConnector
 from magneto_api import queries
 from magneto_api.queries import *
+from magneto_api.output import MeasurementsWriter, OutputType
 
 from datetime import *
 
@@ -37,8 +38,20 @@ if __name__=="__main__":
 
     rs = filter_measurements(dbconnector,filter)
 
-    for row in rs:
-        print(row)
+    path = "."
+    prefix = "test_output"
+    writer = MeasurementsWriter(path,prefix, OutputType.CSV)
+    writer.writeMeasurements(rs)
+    writer.close()
+
+    rs = filter_measurements(dbconnector, filter)
+
+    path = "."
+    prefix = "test_output"
+    writer = MeasurementsWriter(path, prefix, OutputType.JSON)
+    writer.writeMeasurements(rs)
+    writer.close()
+
 
 
 

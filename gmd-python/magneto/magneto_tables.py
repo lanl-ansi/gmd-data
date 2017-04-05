@@ -1,6 +1,6 @@
 import csv
 from datetime import datetime, timedelta
-from magneto import dbsettings
+from magneto import dbsettings_RESTRICTED
 from sqlalchemy import Column, DateTime, String, Integer, Float, \
                        ForeignKey, MetaData, create_engine, Table
 
@@ -14,8 +14,8 @@ Base = declarative_base()
 # SuperMAG stations fields:
 #IAGA,GLON,GLAT,MLON,MLAT,STATION_NAME
 
-engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(dbsettings.write_user,dbsettings.write_user_passwd,
-                                                            dbsettings.host, dbsettings.port, dbsettings.db))
+engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(dbsettings_RESTRICTED.write_user,dbsettings_RESTRICTED.write_user_passwd,
+                                                            dbsettings_RESTRICTED.host, dbsettings_RESTRICTED.port, dbsettings_RESTRICTED.db))
 #engine = create_engine('sqlite:///../../data/magneto.db')
 
 metadata = MetaData()

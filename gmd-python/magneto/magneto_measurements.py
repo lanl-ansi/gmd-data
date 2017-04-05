@@ -1,6 +1,6 @@
 import csv
 from datetime import datetime
-from magneto import dbsettings
+from magneto import dbsettings_RESTRICTED
 from sqlalchemy import Column, DateTime, String, Integer, Float, \
                        ForeignKey, MetaData, create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -77,8 +77,8 @@ def insert_buffer(measurements, engine):
 
 if __name__ == '__main__':
     #db_uri = 'sqlite:///../../data/magneto.db'
-    #db_uri='postgresql://{}:{}@{}:{}/{}'.format(dbsettings.write_user, dbsettings.write_user_passwd,
-    #                                                            dbsettings.host, dbsettings.port, dbsettings.db)
+    #db_uri='postgresql://{}:{}@{}:{}/{}'.format(dbsettings_RESTRICTED.write_user, dbsettings_RESTRICTED.write_user_passwd,
+    #                                                            dbsettings_RESTRICTED.host, dbsettings_RESTRICTED.port, dbsettings_RESTRICTED.db)
 
     print("Reading and storing measurements.")
     dt1 = datetime.now()

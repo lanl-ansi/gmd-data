@@ -107,8 +107,8 @@ def filter_measurements(dbconnector,filter):
     coordinate_range = filter.coordinate_range
     coordinate_type = filter.coordinate_type
     rs = None
-    # Only perform the query if at least one filter is present.
-    if ((len(station_ids)>0)|(len(timestamp_range)>0)|(len(coordinate_range)>0)):
+    # Only perform the query if the time range filter is present at least.
+    if (len(timestamp_range)>0):
 
         # Station ID set.
         station_set = set()
