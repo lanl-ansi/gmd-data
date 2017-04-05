@@ -316,8 +316,7 @@ public class Queries {
 		Timestamp[] timeRange = filter.getTimeRange();
 		Point2D[] coordRange = filter.getCoordRange();
 		CoordinateType coordinateType = filter.getCoordinateType();
-		boolean whereclause = (stationIDs!=null)&&(timeRange!=null)&&(coordRange!=null);
-		if(whereclause){ // Some type of filter is required to perform the query.
+		if(timeRange!=null){ // Some type of time filter is required to perform the query.
 			List<String> clauses = new ArrayList<>();
 			Set<String> stationIDSet = null;
 			// Station ID filter selects specific stations by ID.
