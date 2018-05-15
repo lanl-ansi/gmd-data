@@ -18,7 +18,7 @@ class MeasurementsWriter:
         self.output_type = output_type
         if (self.output_type == OutputType.CSV):
             self.filepath = path+"/"+prefix+".csv"
-            self.file = open(self.filepath, 'w')
+            self.file = open(self.filepath, 'wb')
             self.writer = csv.writer(self.file)
         elif (self.output_type == OutputType.JSON):
             self.filepath = path+"/"+prefix+".json"
@@ -52,7 +52,7 @@ class MeasurementsWriter:
             if (c=="date_utc"):
                 value = str(value)
             rowobj[c] = value
-        self.file.write(dumps(rowobj))
+        self.file.write(dumps(rowobj,indent=2))
 
 
     def close(self):

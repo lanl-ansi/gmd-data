@@ -9,7 +9,9 @@ from sqlalchemy.orm.session import sessionmaker
 
 class DBConnector:
     def __init__(self):
-        self.engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(dbsettings.read_user, dbsettings.read_user_passwd,                                                                    dbsettings.host, dbsettings.port, dbsettings.db))
+        self.engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(dbsettings.read_user,\
+            dbsettings.read_user_passwd,dbsettings.host,\
+            dbsettings.port, dbsettings.db))
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
         Base = automap_base()
